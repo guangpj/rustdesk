@@ -161,6 +161,13 @@ edit("Cargo.toml", [
     ('name = "librustdesk"', 'name = "libgcmvp"', "lib name"),
 ])
 
+# Cargo.lock 同步包名，否则 --locked 构建会直接失败
+edit("Cargo.lock", [(
+    'name = "rustdesk"\nversion = "1.5.3"',
+    'name = "gcmvp"\nversion = "1.5.3"',
+    "Cargo.lock 包名 -> gcmvp",
+)])
+
 # build.py 的库文件存在性检查跟随新 lib 名
 edit("build.py", [(
     "target/release/librustdesk.dll",
