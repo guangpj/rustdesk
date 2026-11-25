@@ -536,8 +536,10 @@ jobs:
           if-no-files-found: error
 
       - name: Publish Release
+        # Disabled: fork GITHUB_TOKEN is read-only, and the EXE is delivered as
+        # a workflow artifact anyway. This step otherwise fails after the build.
+        if: ${{ false }}
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
-        if: env.UPLOAD_ARTIFACT == 'true' && env.PUBLISH_UPDATE_METADATA != 'true'
         with:
           prerelease: true
           tag_name: ${{ env.TAG_NAME }}
