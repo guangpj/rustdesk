@@ -14,6 +14,14 @@ import re
 import sys
 from pathlib import Path
 
+# GitHub Windows runners default to cp1252; Chinese log details would crash
+# with UnicodeEncodeError before the build even starts.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+except Exception:
+    pass
+
 ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
 APPLY_NAME = "gcmvp"
 APP_DISPLAY = "GCMVP Remote"
