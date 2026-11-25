@@ -331,6 +331,17 @@ jobs:
         shell: bash
         run: echo "SODIUM_LIB_DIR=$VCPKG_ROOT/installed/${{ matrix.job.vcpkg-triplet }}/lib" >> "$GITHUB_ENV"
 
+      - name: Apply gcmvp customization
+        shell: bash
+        env:
+          APP_NAME: gcmvp
+          ORG: gcmvp
+        run: |
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          echo "ORG=$ORG" >> $GITHUB_ENV
+          python3 customize.py .
+          echo "gcmvp customization applied"
+
       - name: Build rustdesk
         run: |
           # Windows: build RustDesk
@@ -410,7 +421,7 @@ jobs:
         if: env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: rustdesk-unsigned-windows-${{ matrix.job.arch }}
+          name: gcmvp-unsigned-windows-${{ matrix.job.arch }}
           path: rustdesk
 
       - name: Sign rustdesk files
@@ -473,7 +484,7 @@ jobs:
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe
           popd
           mkdir -p ./SignOutput
-          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
+          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/gcmvp-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
@@ -558,7 +569,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: windows-flutter-${{ matrix.job.arch }}-exe
-          path: ./SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
+          path: ./SignOutput/gcmvp-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
           if-no-files-found: error
 
       - name: Upload signed Windows Flutter MSI
@@ -705,7 +716,7 @@ jobs:
         if: env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: rustdesk-unsigned-windows-${{ matrix.job.arch }}
+          name: gcmvp-unsigned-windows-${{ matrix.job.arch }}
           path: Release
 
       - name: Sign rustdesk files
