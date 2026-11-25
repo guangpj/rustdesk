@@ -161,6 +161,13 @@ edit("Cargo.toml", [
     ('name = "librustdesk"', 'name = "libgcmvp"', "lib name"),
 ])
 
+# build.py 的库文件存在性检查跟随新 lib 名
+edit("build.py", [(
+    "target/release/librustdesk.dll",
+    "target/release/libgcmvp.dll",
+    "build.py 库检查 -> libgcmvp.dll",
+)])
+
 # Windows 可执行资源信息
 edit("flutter/windows/runner/Runner.rc", [
     ('VALUE "FileDescription", "RustDesk Remote Desktop"',
