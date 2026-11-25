@@ -65,6 +65,8 @@ env:
   ARMV7_VCPKG_COMMIT_ID: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13, got "/opt/artifacts/vcpkg/vcpkg: No such file or directory" with latest version
   VERSION: "1.5.3"
   NDK_VERSION: "r28c"
+  APP_NAME: gcmvp
+  ORG: gcmvp
   #signing keys env variable checks
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
@@ -314,12 +316,7 @@ jobs:
 
       - name: Apply gcmvp customization
         shell: bash
-        env:
-          APP_NAME: gcmvp
-          ORG: gcmvp
         run: |
-          echo "APP_NAME=" >> 
-          echo "ORG=" >> 
           python3 customize.py .
           echo "gcmvp customization applied"
 
