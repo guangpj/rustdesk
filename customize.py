@@ -206,35 +206,63 @@ for f in ["src/common.rs", "src/naming.rs", "src/lang/en.rs", "src/lang.rs"]:
     ], required=False)
 
 # ---------------------------------------------------------------- 需求 4
-# 被控端极简 UI：只保留 IDBoard 和 PasswordBoard
-regex_edit(
-    "flutter/lib/desktop/pages/desktop_home_page.dart",
-    r"    final children = <Widget>\[\n"
-    r"      if \(!isOutgoingOnly\) buildPresetPasswordWarning\(\),\n"
-    r"      if \(bind\.isCustomClient\(\)\).*?\),\n"
-    r"      Align\(\n"
-    r"        alignment: Alignment\.center,\n"
-    r"        child: loadLogo\(\),\n"
-    r"      \),\n"
-    r"      buildTip\(context\),\n",
-    "    final children = <Widget>[\n"
-    "      // gcmvp: minimal UI - only ID and password boards are kept.\n",
-    "被控端移除警告/品牌/logo/提示卡片（首选模式）",
-    count=1,
-    required=False,
-)
-# 若上面已生效，这一处 old 片段自然消失；用宽容匹配仅作用于仍在的原始布局
-regex_edit(
-    "flutter/lib/desktop/pages/desktop_home_page.dart",
-    r"      if \(!isOutgoingOnly\) buildPresetPasswordWarning\(\),\n"
-    r"      if \(bind\.isCustomClient\(\)\)\s+Align\(\s+alignment: Alignment\.center,\s+child: loadPowered\(context\),\s+\),\n"
-    r"      Align\(\s+alignment: Alignment\.center,\s+child: loadLogo\(\),\s+\),\n"
-    r"      buildTip\(context\),\n",
-    "      // gcmvp: removed warning/powered/logo/tip for minimal UI.\n",
-    "被控端移除警告/logo/提示（备用模式）",
-    count=1,
-    required=False,
-)
+# 被控端极简 UI：删除警告/品牌/logo/提示/帮助卡片，但必须保留
+# buildIDBoard + buildPasswordBoard，否则页面会变成白屏。
+edit("flutter/lib/desktop/pages/desktop_home_page.dart", [(
+    """      if (!isOutgoingOnly) buildPresetPasswordWarning(),
+      if (bind.isCustomClient())
+        Align(
+          alignment: Alignment.center,
+          child: loadPowered(context),
+        ),
+      Align(
+        alignment: Alignment.center,
+        child: loadLogo(),
+      ),
+      buildTip(context),
+""",
+    """      // gcmvp: minimal UI - only ID and password boards are kept.
+""",
+    "移除警告/powered/logo/提示，保留识别码与密码面板",
+)])
+edit("flutter/lib/desktop/pages/desktop_home_page.dart", [(
+    """      FutureBuilder<Widget>(
+        future: Future.value(
+            Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
+        builder: (_, data) {
+          if (data.hasData) {
+            if (isIncomingOnly) {
+              if (isInHomePage()) {
+                Future.delayed(Duration(milliseconds: 300), () {
+                  _updateWindowSize();
+                });
+              }
+            }
+            return data.data!;
+          } else {
+            return const Offstage();
+          }
+        },
+      ),
+""",
+    """      // gcmvp: help/update cards hidden.
+""",
+    "隐藏帮助/更新卡片",
+)])
+
+# 关闭行为：主窗口不要拦截 X 按钮。否则 UI 初始化失败时窗口永远关不掉。
+edit("flutter/lib/main.dart", [(
+    "windowManager.setPreventClose(true);",
+    "windowManager.setPreventClose(false); // gcmvp: X always closes the app",
+    "主窗口 X 按钮直接关闭",
+)])
+
+# 窗口标题强制改为 GCMVP（避免运行时配置仍显示 RustDesk）
+edit("flutter/lib/common.dart", [(
+    "String getWindowName({WindowType? overrideType}) {\n  final name = bind.mainGetAppNameSync();",
+    'String getWindowName({WindowType? overrideType}) {\n  final name = "GCMVP"; // gcmvp: forced window title',
+    "窗口标题 -> GCMVP",
+)])
 
 # 控制端极简 UI：只保留远程 ID 输入框
 edit("flutter/lib/desktop/pages/connection_page.dart", [(
